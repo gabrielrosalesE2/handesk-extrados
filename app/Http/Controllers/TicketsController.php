@@ -41,8 +41,24 @@ class TicketsController extends Controller
             'title'     => 'required|min:3',
             'body'      => 'required',
             'team_id'   => 'nullable|exists:teams,id',
+            'invoice_number' => 'required',
+            'uuid' => 'required',
+            'load_number' => 'required',
+            'order_number' => 'required',
+            'cust_ref' => 'required',
+            'total' => 'required',
+            'coin_type' => 'required',
+            'error_type' => 'required',
         ]);
-        $ticket = Ticket::createAndNotify(request('requester'), request('title'), request('body'), request('tags'));
+        $ticket = Ticket::createAndNotify(request('requester'), request('title'), request('body'), request('tags'),
+            request('invoice_number'), 
+            request('uuid'),
+            request('load_number'),
+            request('order_number'),
+            request('cust_ref'),
+            request('total'),
+            request('coin_type'),
+            request('error_type'));
         $ticket->updateStatus(request('status'));
 
         if (request('team_id')) {

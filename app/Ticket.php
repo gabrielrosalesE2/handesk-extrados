@@ -24,17 +24,21 @@ class Ticket extends BaseModel
     const STATUS_NEW     = 1;
     const STATUS_OPEN    = 2;
     const STATUS_PENDING = 3;
-    const STATUS_SOLVED  = 4;
-    const STATUS_CLOSED  = 5;
-    const STATUS_MERGED  = 6;
-    const STATUS_SPAM    = 7;
+    const STATUS_NEED_DOC  = 4;
+    const STATUS_CANCEL  = 5;
+    const STATUS_RUNNING = 6;
+    const STATUS_WAITING = 7;
+    const STATUS_SOLVED = 8;
+    const STATUS_CLOSED = 9;
+
 
     const PRIORITY_LOW       = 1;
     const PRIORITY_NORMAL    = 2;
     const PRIORITY_HIGH      = 3;
     const PRIORITY_BLOCKER   = 4;
 
-    public static function createAndNotify($requester, $title, $body, $tags)
+    public static function createAndNotify($requester, $title, $body, $tags, 
+        $invoice_number,$uuid,$load_number,$order_number,$cust_ref,$total,$coin_type,$error_type)
     {
         $requester = Requester::findOrCreate($requester['name'] ?? 'Unknown', $requester['email'] ?? null);
         $ticket    = $requester->tickets()->create([
@@ -42,6 +46,14 @@ class Ticket extends BaseModel
             'body'         => $body,
             'public_token' => Str::random(24),
             'team_id'      => Settings::defaultTeamId(),
+            'invoice_number'  => $invoice_number,
+            'uuid'  => $uuid,
+            'load_number'  => $load_number,
+            'order_number'  => $order_number,
+            'cust_ref'  => $cust_ref,
+            'total'  => $total,
+            'coin_type'  => $coin_type,
+            'error_type'  => $error_type
         ])->attachTags($tags);
         tap(new TicketCreated($ticket), function ($newTicketNotification) use ($ticket) {
             Admin::notifyAll($newTicketNotification);
@@ -205,18 +217,18 @@ class Ticket extends BaseModel
         ])->notifyNewNote();
     }
 
-    public function merge($user, $tickets)
-    {
-        collect($tickets)->map(function ($ticket) {
-            return is_numeric($ticket) ? Ticket::find($ticket) : $ticket;
-        })->reject(function ($ticket) {
-            return $ticket->id == $this->id || $ticket->status > Ticket::STATUS_SOLVED;
-        })->each(function ($ticket) use ($user) {
-            $ticket->addNote($user, "Merged with #{$this->id}");
-            $ticket->updateStatus(Ticket::STATUS_MERGED);
-            $this->mergedTickets()->attach($ticket);
-        });
-    }
+    // public function merge($user, $tickets)
+    // {
+    //     collect($tickets)->map(function ($ticket) {
+    //         return is_numeric($ticket) ? Ticket::find($ticket) : $ticket;
+    //     })->reject(function ($ticket) {
+    //         return $ticket->id == $this->id || $ticket->status > Ticket::STATUS_SOLVED;
+    //     })->each(function ($ticket) use ($user) {
+    //         $ticket->addNote($user, "Merged with #{$this->id}");
+    //         $ticket->updateStatus(Ticket::STATUS_MERGED);
+    //         $this->mergedTickets()->attach($ticket);
+    //     });
+    // }
 
     public function updateStatus($status)
     {
@@ -266,7 +278,7 @@ class Ticket extends BaseModel
 
     public function canBeEdited()
     {
-        return ! in_array($this->status, [self::STATUS_CLOSED, self::STATUS_MERGED]);
+        return ! in_array($this->status, [self::STATUS_CLOSED, self::STATUS_CANCEL]);
     }
 
     public static function statusNameFor($status)
@@ -277,14 +289,21 @@ class Ticket extends BaseModel
             case static::STATUS_PENDING: return 'pending';
             case static::STATUS_SOLVED: return 'solved';
             case static::STATUS_CLOSED: return 'closed';
-            case static::STATUS_MERGED: return 'merged';
-            case static::STATUS_SPAM: return 'spam';
+            case static::STATUS_CANCEL: return 'canceled';
+            case static::STATUS_NEED_DOC: return 'doc needed';
+            case static::STATUS_WAITING: return 'waiting';
+            case static::STATUS_RUNNING: return 'running';
         }
     }
 
     public function statusName()
     {
         return static::statusNameFor($this->status);
+    }
+
+    public function getStatus()
+    {
+        return ($this->status);
     }
 
     public static function priorityNameFor($priority)

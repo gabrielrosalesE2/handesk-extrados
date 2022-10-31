@@ -29,12 +29,36 @@
                 <div class="mb1">
                     {{ __('ticket.note') }}: {{ Form::checkbox('private') }}
                 </div>
-                <button class="mt1 uppercase ph3"> @icon(comment) {{ __('ticket.commentAs') }} {{ $ticket->statusName() }}</button>
+                <button class="mt1 uppercase ph3" disabled> @icon(comment) {{ __('ticket.commentAs') }}</button>
                 <span class="dropdown button caret-down"> @icon(caret-down) </span>
                 <ul class="dropdown-container">
-                    <li><a class="pointer" onClick="setStatusAndSubmit( {{ App\Ticket::STATUS_OPEN    }} )"><div style="width:10px; height:10px" class="circle inline ticket-status-open mr1"></div> {{ __('ticket.commentAs') }} <b>{{ __("ticket.open") }}   </b> </a></li>
-                    <li><a class="pointer" onClick="setStatusAndSubmit( {{ App\Ticket::STATUS_PENDING }} )"><div style="width:10px; height:10px" class="circle inline ticket-status-pending mr1"></div> {{ __('ticket.commentAs') }} <b>{{ __("ticket.pending") }}</b> </a></li>
-                    <li><a class="pointer" onClick="setStatusAndSubmit( {{ App\Ticket::STATUS_SOLVED  }} )"><div style="width:10px; height:10px" class="circle inline ticket-status-solved mr1"></div> {{ __('ticket.commentAs') }} <b>{{ __("ticket.solved") }} </b> </a></li>
+                    @switch($ticket->getStatus())
+                        @case(1)
+                            <li><a class="pointer" onClick="setStatusAndSubmit( {{ App\Ticket::STATUS_OPEN    }} )"><div style="width:10px; height:10px" class="circle inline ticket-status-open mr1"></div> {{ __('ticket.commentAs') }} <b>{{ __("ticket.open") }}   </b> </a></li>
+                            @break
+                        @case(2)
+                            <li><a class="pointer" onClick="setStatusAndSubmit( {{ App\Ticket::STATUS_PENDING }} )"><div style="width:10px; height:10px" class="circle inline ticket-status-pending mr1"></div> {{ __('ticket.commentAs') }} <b>{{ __("ticket.pending") }}</b> </a></li>
+                            <li><a class="pointer" onClick="setStatusAndSubmit( {{ App\Ticket::STATUS_NEED_DOC  }} )"><div style="width:10px; height:10px" class="circle inline ticket-status-solved mr1"></div> {{ __('ticket.commentAs') }} <b> Need doc </b> </a></li>
+                            @break
+                        @case(3)
+                            <li><a class="pointer" onClick="setStatusAndSubmit( {{ App\Ticket::STATUS_NEED_DOC  }} )"><div style="width:10px; height:10px" class="circle inline ticket-status-solved mr1"></div> {{ __('ticket.commentAs') }} <b> Need doc </b> </a></li>
+                            <li><a class="pointer" onClick="setStatusAndSubmit( {{ App\Ticket::STATUS_RUNNING  }} )"><div style="width:10px; height:10px" class="circle inline ticket-status-pending mr1"></div> {{ __('ticket.commentAs') }} <b> Running </b> </a></li>
+                            <li><a class="pointer" onClick="setStatusAndSubmit( {{ App\Ticket::STATUS_CANCEL }} )"><div style="width:10px; height:10px" class="circle inline ticket-status-pending mr1"></div> {{ __('ticket.commentAs') }} <b> Cancel </b> </a></li>
+                            @break
+                        @case(4)
+                            <li><a class="pointer" onClick="setStatusAndSubmit( {{ App\Ticket::STATUS_PENDING }} )"><div style="width:10px; height:10px" class="circle inline ticket-status-pending mr1"></div> {{ __('ticket.commentAs') }} <b>{{ __("ticket.pending") }}</b> </a></li>
+                            @break
+                        @case(7)
+                            <li><a class="pointer" onClick="setStatusAndSubmit( {{ App\Ticket::STATUS_PENDING }} )"><div style="width:10px; height:10px" class="circle inline ticket-status-pending mr1"></div> {{ __('ticket.commentAs') }} <b>{{ __("ticket.pending") }}</b> </a></li>
+                            <li><a class="pointer" onClick="setStatusAndSubmit( {{ App\Ticket::STATUS_SOLVED }} )"><div style="width:10px; height:10px" class="circle inline ticket-status-pending mr1"></div> {{ __('ticket.commentAs') }} <b>{{ __("ticket.pending") }}</b> </a></li>
+                            @break
+                        @case(8)
+                            <li><a class="pointer" onClick="setStatusAndSubmit( {{ App\Ticket::STATUS_CLOSED }} )"><div style="width:10px; height:10px" class="circle inline ticket-status-pending mr1"></div> {{ __('ticket.commentAs') }} <b>{{ __("ticket.pending") }}</b> </a></li>
+                            
+                            @break
+                        @default
+                            <span>Something went wrong, please try again</span>
+                    @endswitch
                 </ul>
             @endif
             {{ Form::close() }}
