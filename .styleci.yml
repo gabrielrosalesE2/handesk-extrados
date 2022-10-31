@@ -1,0 +1,20 @@
+preset: laravel
+
+risky: false
+
+enabled:
+  - align_double_arrow
+  - align_equals
+
+disabled:
+  - unalign_equals
+
+finder:
+  name:
+    - "*.php"
+  not-name:
+    - "*.blade.php"
+    - "_ide_helper.php"
+  exclude:
+    - "public"
+    - "tests"
